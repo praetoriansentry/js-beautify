@@ -1,47 +1,35 @@
 #!/usr/bin/env node
-
 /*jslint onevar: false, plusplus: false*/
 /*
 
- JS Beautifier
+Node JS Beautifier
 ---------------
 
 
-  Written by Einar Lielmanis, <einar@jsbeautifier.org>
-      http://jsbeautifier.org/
+This is the same beautifier as from jsbeautifier.org.  I've just taken the
+JS and made it so it can be more easily excuted from the commandline on
+systems with node.
 
-  Originally converted to javascript by Vital, <vital76@gmail.com>
-  "End braces on own line" added by Chris J. Shull, <chrisjshull@gmail.com>
+I wouldn't be surprised if there is something that already does this, but
+I couldn't find it fast enough.
 
-  You are free to use this in any way you want, in case you find this useful or working for you.
+Here are some example uses
 
-  Usage:
-    js_beautify(js_source_text);
-    js_beautify(js_source_text, options);
+    ./beautify.js file.js > out.js
+    ./beautify.js --jslint_happy=true file.js > out.js
+    ./beautify.js --indent_size=8 --jslint_happy=true file.js > out.js
+    ./beautify.js --indent_char="\t" --indent_size=1  file.js > out.js
 
-  The options are:
-    indent_size (default 4)          — indentation size,
-    indent_char (default space)      — character to indent with,
-    preserve_newlines (default true) — whether existing line breaks should be preserved,
-    preserve_max_newlines (default unlimited) - maximum number of line breaks to be preserved in one chunk,
-
-    jslint_happy (default false) — if true, then jslint-stricter mode is enforced.
-
-            jslint_happy   !jslint_happy
-            ---------------------------------
-             function ()      function()
-
-    brace_style (default "collapse") - "collapse" | "expand" | "end-expand"
-            put braces on the same line as control statements (default), or put braces on own line (Allman / ANSI style), or just put end braces on own line.
-
-    e.g
-
-    js_beautify(js_source_text, {
-      'indent_size': 1,
-      'indent_char': '\t'
-    });
-
-
+The various options are
+*   indent_size (default 4) - how far to indent
+*   indent_char (default space) - the character to use for indentation
+*   preserve_newlines (default true) - whether or not line breaks should be kept
+*   preserve_max_newlines (default unlimited) - maximal number of line breaks in a row to be preserved
+*   jslint_happy (default false) - jslint options
+*   brace_style (default collapse) - where to put opening braces.  This can be:
+    *   collapse - braces go on the same line as the statement
+    *   expand - braces go on their own line
+    *   end-expand - just end braces go on their own line
 */
 
 
@@ -1167,9 +1155,21 @@ var fs = require('fs'),
 
 argList = argList.slice(2);
 len = argList.length;
-if (len === 0) {
-    console.log('No Arguments');
-    process.exit(1);
+re = /help/i;
+
+if ( len === 0 || re.exec(argList[0])) {
+    console.log(
+        'Here is how you might want to run this:\n'
+        + './beautify.js --jslint_happy=true file.js > out.js\n\n'
+        + 'Here are the various arguments you can provide:\n'
+        + '\tindent_size (default 4) - how far to indent\n'
+        + '\tindent_char (default space) - the character to use for indentation\n'
+        + '\tpreserve_newlines (default true) - whether or not line breaks should be kept\n'
+        + '\tpreserve_max_newlines (default unlimited) - maximal number of line breaks in a row to be preserved\n'
+        + '\tjslint_happy (default false) - jslint options\n'
+        + '\tbrace_style (default collapse) - where to put opening braces. Valid options are "collapse", "expand", or "end-expand"\n'
+    );
+    process.exit(0);
 }
 
 for (i = 0; i < len; i = i + 1) {
@@ -1180,6 +1180,10 @@ for (i = 0; i < len; i = i + 1) {
         // This is an arg
         option = match[1];
         value = match[2];
+        if (value === '\\t') {
+            // seems like the simplest way to make sure this works
+            value = "\t";
+        }
         args[option] = value;
     } else {
         // a file name?

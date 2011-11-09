@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+/*jslint onevar: false, plusplus: false*/
 /*
 
  JS Beautifier
@@ -42,51 +44,6 @@
 
 */
 
-var fs = require('fs'),
-    argList = process.argv,
-    len,
-    args = {},
-    files = [],
-    i,
-    arg,
-    re,
-    match,
-    option,
-    data,
-    beautifulJS,
-    value;
-
-
-argList = argList.slice(2);
-len = argList.length;
-if (len === 0) {
-    console.log('No Arguments');
-    process.exit(1);
-}
-
-for (i = 0; i < len; i = i + 1) {
-    arg = argList[i];
-    re = /--(.+)=(.+)/;
-    match = re.exec(arg)
-    if (match) {
-        // This is an arg
-        option = match[1];
-        value = match[2];
-        args[option] = value;
-    } else {
-        // a file name?
-        file = arg;
-        fs.readFile( file, function (err, data){
-            if (err) {
-                throw err;
-            }
-            data = data.toString("utf8");
-            beautifulJS = js_beautify(data, args);
-            console.log(beautifulJS);
-        });
-    }
-}
-
 
 function js_beautify(js_source_text, options) {
 
@@ -126,10 +83,7 @@ function js_beautify(js_source_text, options) {
 
     function trim_output(eat_newlines) {
         eat_newlines = typeof eat_newlines === 'undefined' ? false : eat_newlines;
-        while (output.length && (output[output.length - 1] === ' '
-            || output[output.length - 1] === indent_string
-            || output[output.length - 1] === preindent_string
-            || (eat_newlines && (output[output.length - 1] === '\n' || output[output.length - 1] === '\r')))) {
+        while (output.length && (output[output.length - 1] === ' ' || output[output.length - 1] === indent_string || output[output.length - 1] === preindent_string || (eat_newlines && (output[output.length - 1] === '\n' || output[output.length - 1] === '\r')))) {
             output.pop();
         }
     }
@@ -138,12 +92,8 @@ function js_beautify(js_source_text, options) {
         return s.replace(/^\s\s*|\s\s*$/, '');
     }
 
-    function force_newline()
-    {
-        var old_keep_array_indentation = opt_keep_array_indentation;
-        opt_keep_array_indentation = false;
-        print_newline()
-        opt_keep_array_indentation = old_keep_array_indentation;
+    function is_array(mode) {
+        return mode === '[EXPRESSION]' || mode === '[INDENTED-EXPRESSION]';
     }
 
     function print_newline(ignore_repeated) {
@@ -177,7 +127,12 @@ function js_beautify(js_source_text, options) {
         }
     }
 
-
+    function force_newline() {
+        var old_keep_array_indentation = opt_keep_array_indentation;
+        opt_keep_array_indentation = false;
+        print_newline()
+        opt_keep_array_indentation = old_keep_array_indentation;
+    }
 
     function print_single_space() {
         if (flags.eat_next_space) {
@@ -231,9 +186,6 @@ function js_beautify(js_source_text, options) {
         };
     }
 
-    function is_array(mode) {
-        return mode === '[EXPRESSION]' || mode === '[INDENTED-EXPRESSION]';
-    }
 
     function is_expression(mode) {
         return mode === '[EXPRESSION]' || mode === '[INDENTED-EXPRESSION]' || mode === '(EXPRESSION)';
@@ -341,7 +293,7 @@ function js_beautify(js_source_text, options) {
             while (in_array(c, whitespace)) {
 
                 if (c === "\n") {
-                    n_newlines += ( (opt_max_preserve_newlines) ? (n_newlines <= opt_max_preserve_newlines) ? 1: 0: 1 );
+                    n_newlines += ((opt_max_preserve_newlines) ? (n_newlines <= opt_max_preserve_newlines) ? 1 : 0 : 1);
                 }
 
 
@@ -391,9 +343,7 @@ function js_beautify(js_source_text, options) {
             if (c === 'in') { // hack for 'in' operator
                 return [c, 'TK_OPERATOR'];
             }
-            if (wanted_newline && last_type !== 'TK_OPERATOR'
-                && last_type !== 'TK_EQUALS'
-                && !flags.if_line && (opt_preserve_newlines || last_text !== 'var')) {
+            if (wanted_newline && last_type !== 'TK_OPERATOR' && last_type !== 'TK_EQUALS' && !flags.if_line && (opt_preserve_newlines || last_text !== 'var')) {
                 print_newline();
             }
             return [c, 'TK_WORD'];
@@ -426,7 +376,7 @@ function js_beautify(js_source_text, options) {
             if (input.charAt(parser_pos) === '*') {
                 parser_pos += 1;
                 if (parser_pos < input_length) {
-                    while (! (input.charAt(parser_pos) === '*' && input.charAt(parser_pos + 1) && input.charAt(parser_pos + 1) === '/') && parser_pos < input_length) {
+                    while (!(input.charAt(parser_pos) === '*' && input.charAt(parser_pos + 1) && input.charAt(parser_pos + 1) === '/') && parser_pos < input_length) {
                         c = input.charAt(parser_pos);
                         comment += c;
                         if (c === '\x0d' || c === '\x0a') {
@@ -466,9 +416,7 @@ function js_beautify(js_source_text, options) {
 
         if (c === "'" || // string
         c === '"' || // string
-        (c === '/' &&
-            ((last_type === 'TK_WORD' && in_array(last_text, ['return', 'do'])) ||
-                (last_type === 'TK_COMMENT' || last_type === 'TK_START_EXPR' || last_type === 'TK_START_BLOCK' || last_type === 'TK_END_BLOCK' || last_type === 'TK_OPERATOR' || last_type === 'TK_EQUALS' || last_type === 'TK_EOF' || last_type === 'TK_SEMICOLON')))) { // regexp
+        (c === '/' && ((last_type === 'TK_WORD' && in_array(last_text, ['return', 'do'])) || (last_type === 'TK_COMMENT' || last_type === 'TK_START_EXPR' || last_type === 'TK_START_BLOCK' || last_type === 'TK_END_BLOCK' || last_type === 'TK_OPERATOR' || last_type === 'TK_EQUALS' || last_type === 'TK_EOF' || last_type === 'TK_SEMICOLON')))) { // regexp
             var sep = c;
             var esc = false;
             var resulting_string = c;
@@ -764,7 +712,7 @@ function js_beautify(js_source_text, options) {
             } else {
                 set_mode('BLOCK');
             }
-            if (opt_brace_style=="expand") {
+            if (opt_brace_style == "expand") {
                 if (last_type !== 'TK_OPERATOR') {
                     if (last_text === 'return' || last_text === '=') {
                         print_single_space();
@@ -800,7 +748,7 @@ function js_beautify(js_source_text, options) {
 
         case 'TK_END_BLOCK':
             restore_mode();
-            if (opt_brace_style=="expand") {
+            if (opt_brace_style == "expand") {
                 if (last_text !== '{') {
                     print_newline();
                 }
@@ -850,7 +798,7 @@ function js_beautify(js_source_text, options) {
                     // make sure there is a nice clean space of at least one blank line
                     // before a new function definition
                     n_newlines = just_added_newline ? n_newlines : 0;
-                    if ( ! opt_preserve_newlines) {
+                    if (!opt_preserve_newlines) {
                         n_newlines = 1;
                     }
 
@@ -882,7 +830,7 @@ function js_beautify(js_source_text, options) {
                 if (!in_array(token_text.toLowerCase(), ['else', 'catch', 'finally'])) {
                     prefix = 'NEWLINE';
                 } else {
-                    if (opt_brace_style=="expand" || opt_brace_style=="end-expand") {
+                    if (opt_brace_style == "expand" || opt_brace_style == "end-expand") {
                         prefix = 'NEWLINE';
                     } else {
                         prefix = 'SPACE';
@@ -921,7 +869,7 @@ function js_beautify(js_source_text, options) {
                 flags.if_line = false;
             }
             if (in_array(token_text.toLowerCase(), ['else', 'catch', 'finally'])) {
-                if (last_type !== 'TK_END_BLOCK' || opt_brace_style=="expand" || opt_brace_style=="end-expand") {
+                if (last_type !== 'TK_END_BLOCK' || opt_brace_style == "expand" || opt_brace_style == "end-expand") {
                     print_newline();
                 } else {
                     trim_output(true);
@@ -1028,7 +976,7 @@ function js_beautify(js_source_text, options) {
                     } else {
                         flags.var_line_tainted = false;
                     }
-                // } else if (token_text === ':') {
+                    // } else if (token_text === ':') {
                     // hmm, when does this happen? tests don't catch this
                     // flags.var_line = false;
                 }
@@ -1082,10 +1030,9 @@ function js_beautify(js_source_text, options) {
                     }
                 }
                 break;
-            // } else if (in_array(token_text, ['--', '++', '!']) || (in_array(token_text, ['-', '+']) && (in_array(last_type, ['TK_START_BLOCK', 'TK_START_EXPR', 'TK_EQUALS']) || in_array(last_text, line_starters) || in_array(last_text, ['==', '!=', '+=', '-=', '*=', '/=', '+', '-'])))) {
+                // } else if (in_array(token_text, ['--', '++', '!']) || (in_array(token_text, ['-', '+']) && (in_array(last_type, ['TK_START_BLOCK', 'TK_START_EXPR', 'TK_EQUALS']) || in_array(last_text, line_starters) || in_array(last_text, ['==', '!=', '+=', '-=', '*=', '/=', '+', '-'])))) {
             } else if (in_array(token_text, ['--', '++', '!']) || (in_array(token_text, ['-', '+']) && (in_array(last_type, ['TK_START_BLOCK', 'TK_START_EXPR', 'TK_EQUALS', 'TK_OPERATOR']) || in_array(last_text, line_starters)))) {
                 // unary operators (and binary +/- pretending to be unary) special cases
-
                 space_before = false;
                 space_after = false;
 
@@ -1210,6 +1157,45 @@ function js_beautify(js_source_text, options) {
 
 }
 
+
+var fs = require('fs'),
+    argList = process.argv,
+    len, args = {},
+    files = [],
+    i, arg, re, match, option, data, beautifulJS, value;
+
+
+argList = argList.slice(2);
+len = argList.length;
+if (len === 0) {
+    console.log('No Arguments');
+    process.exit(1);
+}
+
+for (i = 0; i < len; i = i + 1) {
+    arg = argList[i];
+    re = /--(.+)=(.+)/;
+    match = re.exec(arg);
+    if (match) {
+        // This is an arg
+        option = match[1];
+        value = match[2];
+        args[option] = value;
+    } else {
+        // a file name?
+        fs.readFile(arg, function (err, data) {
+            if (err) {
+                throw err;
+            }
+            data = data.toString("utf8");
+            beautifulJS = js_beautify(data, args);
+            console.log(beautifulJS);
+        });
+    }
+}
 // Add support for CommonJS. Just put this file somewhere on your require.paths
 // and you will be able to `var js_beautify = require("beautify").js_beautify`.
-if (typeof exports !== "undefined"){exports.js_beautify = js_beautify;}
+if (typeof exports !== "undefined") {
+    exports.js_beautify = js_beautify;
+}
+

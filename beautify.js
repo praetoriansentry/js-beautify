@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*jslint onevar: false, plusplus: false */
 /*
 
@@ -42,6 +43,50 @@
 
 */
 
+var fs = require('fs'),
+    argList = process.argv,
+    len,
+    args = {},
+    files = [],
+    i,
+    arg,
+    re,
+    match,
+    option,
+    data,
+    beautifulJS,
+    value;
+
+
+argList = argList.slice(2);
+len = argList.length;
+if (len === 0) {
+    console.log('No Arguments');
+    process.exit(1);
+}
+
+for (i = 0; i < len; i = i + 1) {
+    arg = argList[i];
+    re = /--(.+)=(.+)/;
+    match = re.exec(arg)
+    if (match) {
+        // This is an arg
+        option = match[1];
+        value = match[2];
+        args[option] = value;
+    } else {
+        // a file name?
+        file = arg;
+        fs.readFile( file, function (err, data){
+            if (err) {
+                throw err;
+            }
+            data = data.toString("utf8");
+            beautifulJS = js_beautify(data, args);
+            console.log(beautifulJS);
+        });
+    }
+}
 
 
 function js_beautify(js_source_text, options) {
@@ -1168,5 +1213,4 @@ function js_beautify(js_source_text, options) {
 
 // Add support for CommonJS. Just put this file somewhere on your require.paths
 // and you will be able to `var js_beautify = require("beautify").js_beautify`.
-if (typeof exports !== "undefined")
-    exports.js_beautify = js_beautify;
+if (typeof exports !== "undefined"){exports.js_beautify = js_beautify;}

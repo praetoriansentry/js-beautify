@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/*jslint onevar: false, plusplus: false */
 /*
 
  JS Beautifier
